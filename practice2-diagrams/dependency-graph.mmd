@@ -1,0 +1,56 @@
+flowchart TD
+  subgraph L4["L4 应用层"]
+    CA["<b>coding-agent</b><br/>@earendil-works/pi-coding-agent<br/>CLI 应用：pi 命令（read/bash/edit/write 工具、会话管理、TUI）"]
+    EV["<b>evals</b><br/>@earendil-works/pi-evals<br/>评测脚本（仅 devDependencies，不在根构建序列）"]
+  end
+  subgraph L3["L3"]
+    ENV["<b>env</b><br/>@earendil-works/pi-env<br/>远程执行环境：SSH 上的 Rust daemon + ExecutionEnv 客户端"]
+  end
+  subgraph L2["L2"]
+    AG["<b>agent</b><br/>@earendil-works/pi-agent-core<br/>通用有状态 agent：传输抽象、状态管理、工具执行、事件流"]
+    DU["<b>durable</b><br/>@earendil-works/pi-durable（实验性）<br/>持久化会话/模型轮次/工具调用运行时"]
+  end
+  subgraph L1["L1"]
+    AI["<b>ai</b><br/>@earendil-works/pi-ai<br/>统一 LLM API：provider 集合、模型目录、鉴权、token/成本统计"]
+    CH["<b>chord</b><br/>@earendil-works/chord<br/>跨进程对象运行时：契约/文档/存储/links/插件热重载"]
+  end
+  subgraph L0["L0 基础层（无内部依赖）"]
+    SC["<b>schema</b><br/>@earendil-works/pi-schema<br/>JSON Schema 构建与校验（无 eval，零依赖）"]
+    TE["<b>telemetry</b><br/>@earendil-works/pi-telemetry<br/>供应商无关遥测契约 + 内存参考实现"]
+    TU["<b>tui</b><br/>@earendil-works/pi-tui<br/>终端 UI 框架：差分渲染、CSI 2026 同步输出"]
+    CM["<b>codemode</b><br/>@earendil-works/pi-codemode<br/>QuickJS-WASM 沙箱执行模型写的 JS，仅能调用注入工具"]
+    MC["<b>mcp</b><br/>@earendil-works/pi-mcp<br/>独立 MCP 客户端（不依赖官方 SDK 与其他 pi 包）"]
+  end
+  CA --> AG
+  CA --> AI
+  CA --> CM
+  CA --> MC
+  CA --> TU
+  EV -. devDeps .-> AI
+  EV -. devDeps .-> CA
+  ENV --> CH
+  ENV --> DU
+  AG --> AI
+  AG --> SC
+  DU --> CH
+  DU --> AI
+  DU --> CM
+  DU --> SC
+  DU --> TE
+  AI --> SC
+  AI --> TE
+  CH --> SC
+  CH --> TE
+
+  classDef leaf fill:#0f2027,stroke:#2a9d8f,color:#e8f4f2;
+  classDef l1 fill:#1d3557,stroke:#457b9d,color:#eaf2f8;
+  classDef l2 fill:#4a3f6b,stroke:#7d6ba8,color:#f0ecf7;
+  classDef l3 fill:#5b4a3f,stroke:#a8845f,color:#f7f0ec;
+  classDef l4 fill:#7a2e2e,stroke:#c0564f,color:#fbecec;
+  classDef dev fill:#222,stroke:#555,stroke-dasharray: 4 3,color:#bbb;
+  class SC,TE,TU,CM,MC leaf;
+  class AI,CH l1;
+  class AG,DU l2;
+  class ENV l3;
+  class CA l4;
+  class EV dev;
