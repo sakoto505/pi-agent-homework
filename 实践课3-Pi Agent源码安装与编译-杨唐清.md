@@ -36,6 +36,12 @@ git --version
 
 小组组织是 `nai-lon-g`。实验开始时该组织里还没有 pi-hunnu-2026 的 fork（组织内只有 00-group 和 git-simple 两个旧实验仓库），所以先在教师仓库 `hunnuOpenSourceSoftware2026/pi-hunnu-2026` 上以 `nai-lon-g` 组织创建 fork，得到 **https://github.com/nai-lon-g/pi-hunnu-2026**，然后在全英路径下克隆：
 
+小组 fork 仓库的 GitHub 页面（可见 "forked from hunnuOpenSourceSoftware2026/pi-hunnu-2026" 横幅，证明源码来源是小组组织内的仓库）：
+
+![小组组织 fork 仓库页面](practice3-images/practice2-fork-page.png)
+
+*图 S2a 小组组织仓库 `nai-lon-g/pi-hunnu-2026` 的 GitHub 页面：显示其 fork 自教师仓库，文件结构与课程仓库一致。*
+
 ```powershell
 git clone --depth 1 --branch main https://github.com/nai-lon-g/pi-hunnu-2026.git
 cd pi-hunnu-2026
@@ -198,6 +204,7 @@ npm run build
 └── practice3-images/                          # 本次截图
     ├── S1-env-versions.png
     ├── S2-repo-clone-state.png
+    ├── practice2-fork-page.png
     ├── S3-config-package-json.png
     ├── S4-npm-install.png
     ├── S5-build-and-verify.png
@@ -212,6 +219,7 @@ npm run build
 | --- | --- | --- |
 | S1 | 环境版本（含 npm 执行策略报错现场） | `practice3-images/S1-env-versions.png` |
 | S2 | 目录 / 远端 / 分支 / 提交编号 | `practice3-images/S2-repo-clone-state.png` |
+| S2a | 小组组织 fork 仓库 GitHub 页面（fork 横幅） | `practice3-images/practice2-fork-page.png` |
 | S3 | 根与子包 package.json 关键配置 | `practice3-images/S3-config-package-json.png` |
 | S4 | npm install 结束输出（警告 vs 0 漏洞） | `practice3-images/S4-npm-install.png` |
 | S5 | build 日志摘录 + 退出码 0 + 产物验证 + 双入口版本号 | `practice3-images/S5-build-and-verify.png` |
