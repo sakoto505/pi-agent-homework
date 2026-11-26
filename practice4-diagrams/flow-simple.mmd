@@ -1,0 +1,20 @@
+flowchart LR
+  CA["<b>coding-agent</b><br/>（Pi CLI 进程）<br/>交互/打印入口、AgentSession<br/>工具注册（read/bash/edit/write…）"]
+  AG["<b>agent</b>（pi-agent-core）<br/>Agent.prompt() → runLoop()<br/>① 模型调用前：[P4] Agent 即将请求模型（413 行）<br/>② 工具结果写入上下文：[P4] 工具结果已加入上下文（285 行）"]
+  AI["<b>ai</b>（pi-ai）<br/>streamFunction = provider 适配器<br/>openai-completions.stream()（api/openai-completions.ts:312）"]
+  RM[("远程模型服务<br/>https://models.hunnu.edu.cn/v1<br/>（OpenAI 兼容 chat/completions）")]
+  CA -->|"session.prompt(text)"| AG
+  AG -->|"streamFunction(config.model, llmContext, {…})"| AI
+  AI -->|"HTTP 请求：system + 历史消息 + 本次消息 + tools 定义"| RM
+  RM -->|"SSE 流式响应：文本 / toolCall / stopReason"| AI
+  AI -->|"流事件（message_update / message_end…）"| AG
+  AG -.->|"响应含 toolCall 时：本地执行工具，<br/>结果 push 进上下文，循环再次请求模型"| AG
+
+  classDef app fill:#7a2e2e,stroke:#c0564f,color:#fbecec;
+  classDef core fill:#4a3f6b,stroke:#7d6ba8,color:#f0ecf7;
+  classDef llm fill:#1d3557,stroke:#457b9d,color:#eaf2f8;
+  classDef remote fill:#0f2027,stroke:#2a9d8f,color:#e8f4f2;
+  class CA app;
+  class AG core;
+  class AI llm;
+  class RM remote;

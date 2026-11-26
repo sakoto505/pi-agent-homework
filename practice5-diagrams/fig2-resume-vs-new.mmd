@@ -1,0 +1,23 @@
+flowchart TD
+  A0(["A 阶段结束：Pi 已用 read 工具读到 handoff.txt<br/>并原样回答待办与启动命令（river-597）；<br/>会话 A 的 JSONL 已存盘 ~/.pi/agent/sessions/…/"])
+  A0 --> Q1["退出 Pi，同一项目目录重新输入同一句提问：<br/>「接着上次的待办，给 README 起草一条启动说明，<br/>写出交接单里的完整启动命令。只用这次会话已有的信息。不要调用工具…」"]
+  Q1 --> BR{"启动方式？"}
+  BR -->|"左：加 -c 恢复上次会话<br/>node .\packages\coding-agent\dist\cli.js -c"| L1["Pi 打开 A 阶段保存的会话文件（JSONL）<br/>从文件恢复历史消息"]
+  L1 --> L2["恢复的历史 = A 的用户提问<br/>+ read 工具调用与结果（含 river-597 命令）<br/>+ A 的回复"]
+  L2 --> L3["Pi 把【恢复的历史 + 本次提问】一起发给模型"]
+  L3 --> L4["实测结果：回答直接写出完整命令<br/>npm run demo -- --profile river-597<br/>并给出 README 草稿；未调用工具<br/>（本轮 [P4] 日志仅 1 条「即将请求模型」）"]
+  BR -->|"右：/new 新建会话"| R1["Pi 创建聊天历史为空的新会话<br/>（不读取 A 的会话文件）"]
+  R1 --> R2["新会话历史 = 空"]
+  R2 --> R3["Pi 只把【本次提问】发给模型"]
+  R3 --> R4["实测结果：模型说明会话里没有上次待办/命令，<br/>按「不调用工具」的约束拒绝猜测命令，<br/>请用户贴出命令或授权读取文件<br/>（本轮 [P4] 日志仅 1 条「即将请求模型」）"]
+
+  classDef done fill:#0f2027,stroke:#2a9d8f,color:#e8f4f2;
+  classDef left fill:#1d3557,stroke:#457b9d,color:#eaf2f8;
+  classDef right fill:#5b4a3f,stroke:#a8845f,color:#f7f0ec;
+  classDef resL fill:#14432e,stroke:#2a9d8f,color:#e8f4f2;
+  classDef resR fill:#4a1d1d,stroke:#c0564f,color:#fbecec;
+  class A0,Q1,BR done;
+  class L1,L2,L3 left;
+  class R1,R2,R3 right;
+  class L4 resL;
+  class R4 resR;

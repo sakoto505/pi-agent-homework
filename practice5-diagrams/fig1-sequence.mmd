@@ -1,0 +1,28 @@
+sequenceDiagram
+  autonumber
+  actor U as 用户
+  participant UI as 交互与会话层<br/>coding-agent interactive-mode.ts
+  participant AG as Agent 执行层<br/>agent agent.ts / agent-loop.ts
+  participant AI as 模型请求层<br/>ai openai-completions.ts
+  participant RD as read 工具<br/>coding-agent tools/read.ts
+
+  U->>UI: 编辑器输入并回车
+  Note over UI: defaultEditor.onSubmit(text)（:3325）<br/>非 / 命令、非 ! 命令时走提示词分支
+  UI->>AG: session.prompt(text)（interactive-mode.ts:3494 → agent-session.ts:2175）
+  Note over AG: AgentSession.prompt → _preparePrompt → _startRun<br/>Agent.prompt()（agent.ts:382）→ runPromptMessages()（:441）→ runAgentLoop()（agent-loop.ts:111）
+  AG->>AG: runLoop() 开始循环（agent-loop.ts:172）
+  Note over AG: 第 1 轮：streamAssistantResponse()<br/>console.error("[P4] Agent 即将请求模型")（:413，本次新增）
+  AG->>AI: streamFunction(config.model, llmContext, {...})（agent-loop.ts:414）
+  Note over AI: 适配器 openai-completions.stream（:312）<br/>POST /v1/chat/completions（baseUrl=https://models.hunnu.edu.cn/v1）
+  AI-->>AG: SSE 流事件：assistant 文本 + toolCall(read, {path:"handoff.txt"})
+  Note over UI: handleEvent: message_update（:3649）→ 建 ToolExecutionComponent 显示工具卡片
+  AG->>RD: executeToolCalls（:520）→ runToolCall（:816）→ tool.execute
+  Note over RD: resolveReadPathAsync + ops.access（fs.access, :270）<br/>isStreamableRange(offset,limit)=true → 流式：<br/>readLocalFileChunks → fsOpen + handle.createReadStream（:81/:88）<br/>selectLinesFromStream（:301-307）
+  RD-->>AG: ToolResultMessage（handoff.txt 两行内容）
+  Note over AG: 第 283-286 行 for 循环：<br/>currentContext.messages.push(result)（:284）<br/>console.error("[P4] 工具结果已加入上下文")（:285，本次新增）
+  AG->>AI: 第 2 轮 streamFunction(...)：llmContext 已含 tool 结果消息
+  AI-->>AG: 最终 assistant 消息（原样报告待办与启动命令）
+  AG->>UI: emit 事件 → AgentSession._handleAgentEvent（agent-session.ts:548）
+  Note over UI: handleEvent: message_end（:3685）→ streamingComponent.updateContent 定稿
+  UI-->>U: 用户看到完整回复（Markdown 渲染）
+  Note over UI,AG: 会话文件持续写入 ~/.pi/agent/sessions/&lt;cwd-hash&gt;/（B 阶段 -c 恢复的数据来源）
